@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = '8888';
 
 // JSONBin конфигурация
-const JSONBIN_BIN_ID = '697d986543b1c97be959cbd0';
+const JSONBIN_BIN_ID = '697da8ecd0ea881f4095597a';
 const JSONBIN_API_KEY = '$2a$10$J24VfFSehaO.P78eeSB/feH0/x9TKke3QBNn5eaCyqzwEnwv/w4sC';
 const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
@@ -83,17 +83,18 @@ app.get('/', async (req, res) => {
   
   const stats = data.friends.map(friend => {
     const totalAbsences = data.absences.filter(absence => absence.name === friend).length;
-    const paidAbsences = data.payments.filter(p => p.name === friend).reduce((sum, p) => sum + (p.count || 1), 0);
-    const remainingAbsences = Math.max(0, totalAbsences - paidAbsences);
-    const debt = remainingAbsences * 2000;
-    return { name: friend, totalAbsences, paidAbsences, remainingAbsences, debt };
+    const totalDebtAmount = totalAbsences * 2000;
+    const paidAmount = data.payments.filter(p => p.name === friend).reduce((sum, p) => sum + (p.amount || 0), 0);
+    const remainingDebt = Math.max(0, totalDebtAmount - paidAmount);
+    const overpayment = Math.max(0, paidAmount - totalDebtAmount);
+    return { name: friend, totalAbsences, totalDebtAmount, paidAmount, remainingDebt, overpayment };
   });
   
-  stats.sort((a, b) => b.remainingAbsences - a.remainingAbsences);
+  stats.sort((a, b) => b.remainingDebt - a.remainingDebt);
   
   const uniqueDates = [...new Set(data.absences.map(absence => absence.date))].sort().reverse();
-  const totalDebt = stats.reduce((sum, stat) => sum + stat.debt, 0);
-  const totalPaid = data.payments.reduce((sum, p) => sum + ((p.count || 1) * 2000), 0);
+  const totalDebt = stats.reduce((sum, stat) => sum + stat.remainingDebt, 0);
+  const totalPaid = data.payments.reduce((sum, p) => sum + (p.amount || 0), 0);
   const totalExpenses = data.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
   const cashBalance = totalPaid - totalExpenses;
   
@@ -145,16 +146,17 @@ app.get('/admin', async (req, res) => {
   
   const stats = data.friends.map(friend => {
     const totalAbsences = data.absences.filter(absence => absence.name === friend).length;
-    const paidAbsences = data.payments.filter(p => p.name === friend).reduce((sum, p) => sum + (p.count || 1), 0);
-    const remainingAbsences = Math.max(0, totalAbsences - paidAbsences);
-    const debt = remainingAbsences * 2000;
-    return { name: friend, totalAbsences, paidAbsences, remainingAbsences, debt };
+    const totalDebtAmount = totalAbsences * 2000;
+    const paidAmount = data.payments.filter(p => p.name === friend).reduce((sum, p) => sum + (p.amount || 0), 0);
+    const remainingDebt = Math.max(0, totalDebtAmount - paidAmount);
+    const overpayment = Math.max(0, paidAmount - totalDebtAmount);
+    return { name: friend, totalAbsences, totalDebtAmount, paidAmount, remainingDebt, overpayment };
   });
   
-  stats.sort((a, b) => b.remainingAbsences - a.remainingAbsences);
+  stats.sort((a, b) => b.remainingDebt - a.remainingDebt);
   
-  const totalDebt = stats.reduce((sum, stat) => sum + stat.debt, 0);
-  const totalPaid = data.payments.reduce((sum, p) => sum + ((p.count || 1) * 2000), 0);
+  const totalDebt = stats.reduce((sum, stat) => sum + stat.remainingDebt, 0);
+  const totalPaid = data.payments.reduce((sum, p) => sum + (p.amount || 0), 0);
   const totalExpenses = data.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
   const cashBalance = totalPaid - totalExpenses;
   
@@ -223,18 +225,18 @@ app.post('/add-payment', async (req, res) => {
     return res.status(403).json({ error: 'Доступ запрещен' });
   }
   
-  const { name, count } = req.body;
+  const { name, amount } = req.body;
   
-  if (!name || !count) {
-    return res.status(400).json({ error: 'Необходимо имя и количество пропусков' });
+  if (!name || !amount) {
+    return res.status(400).json({ error: 'Необходимо имя и сумма' });
   }
   
   const data = await readData();
   
-  data.payments.push({ name, count: parseInt(count), date: new Date().toISOString().split('T')[0] });
+  data.payments.push({ name, amount: parseFloat(amount), date: new Date().toISOString().split('T')[0] });
   await writeData(data);
   
-  return res.json({ success: true, message: `Платеж за ${count} пропусков добавлен` });
+  return res.json({ success: true, message: `Платеж ${amount} тг добавлен` });
 });
 
 // Удаление платежа

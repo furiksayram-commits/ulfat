@@ -21,17 +21,17 @@
                     <div class="table-header">
                         <div class="table-cell">Исми</div>
                         <div class="table-cell">Кемаган</div>
+                        <div class="table-cell">Сумма</div>
                         <div class="table-cell">Туланди</div>
-                        <div class="table-cell">Колди</div>
-                        <div class="table-cell">Карз</div>
+                        <div class="table-cell">Статус</div>
                     </div>
                     <% stats.forEach(stat => { %>
-                        <div class="table-row <% if (stat.totalAbsences === 0) { %>no-absence<% } %> <% if (stat.remainingAbsences === 0) { %>all-paid<% } %>">
+                        <div class="table-row <% if (stat.totalAbsences === 0) { %>no-absence<% } %> <% if (stat.remainingDebt === 0) { %>all-paid<% } %>">
                             <div class="table-cell table-name"><%= stat.name %></div>
                             <div class="table-cell"><%= stat.totalAbsences %></div>
-                            <div class="table-cell"><%= stat.paidAbsences %></div>
-                            <div class="table-cell"><%= stat.remainingAbsences %></div>
-                            <div class="table-cell table-debt"><%= stat.debt %> тг</div>
+                            <div class="table-cell"><%= stat.totalDebtAmount %> тг</div>
+                            <div class="table-cell"><%= stat.paidAmount %> тг</div>
+                            <div class="table-cell"><% if (stat.remainingDebt > 0) { %><%= stat.remainingDebt %> тг<% } else if (stat.overpayment > 0) { %>+<%= stat.overpayment %> тг<% } else { %>✅ Оплачено<% } %></div>
                         </div>
                     <% }); %>
                 </div>
@@ -50,10 +50,13 @@
                                 <div class="history-item">
                                     <button type="button" class="history-button" onclick="toggleDates(this, '<%= stat.name %>')">
                                         <span class="history-name"><%= stat.name %></span>
-                                        <span class="history-count"><%= stat.remainingAbsences %> раз</span>
-                                        <span class="history-sum">💰 <%= stat.debt %> тг</span>
-                                        <% if (stat.paidAbsences > 0) { %>
-                                            <span class="paid-badge">✅ Оплачено <%= stat.paidAbsences %></span>
+                                        <span class="history-count"><%= stat.totalAbsences %> раз</span>
+                                        <span class="history-sum">💰 <%= stat.totalDebtAmount %> тг</span>
+                                        <% if (stat.paidAmount > 0) { %>
+                                            <span class="paid-badge">✅ Туланди <%= stat.paidAmount %> тг</span>
+                                        <% } %>
+                                        <% if (stat.overpayment > 0) { %>
+                                            <span class="paid-badge" style="background: #f1c40f; color: #000;">⚠️ Ортиқча <%= stat.overpayment %> тг</span>
                                         <% } %>
                                         <span class="toggle-icon">▼</span>
                                     </button>
@@ -102,8 +105,8 @@
                         <% payments.forEach(payment => { %>
                             <div class="payment-item">
                                 <span class="payment-name">✅ <%= payment.name %></span>
-                                <span class="payment-amount"><%= (payment.count || 1) * 2000 %> тг</span>
-                                <span class="payment-detail">(<%= payment.count || 1 %> раз)</span>
+                                <span class="payment-amount"><%= payment.amount %> тг</span>
+                                <span class="payment-detail">(<%= payment.date %>)</span>
                             </div>
                         <% }); %>
                     </div>

@@ -107,11 +107,11 @@ if (paymentForm) {
         e.preventDefault();
         
         const name = document.getElementById('paymentName').value;
-        const count = document.getElementById('paymentCount') ? document.getElementById('paymentCount').value : 1;
+        const amount = document.getElementById('paymentAmount').value;
         const messageElement = document.getElementById('paymentMessage');
         
-        if (!name) {
-            showMessage('Пожалуйста, выберите человека', 'error', messageElement);
+        if (!name || !amount) {
+            showMessage('Пожалуйста, заполните все поля', 'error', messageElement);
             return;
         }
         
@@ -121,7 +121,7 @@ if (paymentForm) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, count: parseInt(count) })
+                body: JSON.stringify({ name, amount: parseFloat(amount) })
             });
             
             const data = await response.json();

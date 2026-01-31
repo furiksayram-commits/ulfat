@@ -114,6 +114,57 @@
                 <% } %>
             </section>
 
+            <!-- Добавить долг напрямую -->
+            <section class="section add-debt-section">
+                <h2>💳 Добавить долг напрямую</h2>
+                <form id="debtForm" class="form">
+                    <div class="form-group">
+                        <label for="debtName">Выберите человека:</label>
+                        <select id="debtName" name="debtName" required>
+                            <option value="">-- Выберите --</option>
+                            <% friends.forEach(friend => { %>
+                                <option value="<%= friend %>"><%= friend %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="debtAmount">Сумма долга (тг):</label>
+                        <input type="number" id="debtAmount" name="debtAmount" min="1" placeholder="Введите сумму" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="debtComment">Комментарий/описание:</label>
+                        <input type="text" id="debtComment" name="debtComment" placeholder="Например: От другого события..." required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Добавить долг</button>
+                    <span id="debtMessage" class="message"></span>
+                </form>
+
+                <!-- История прямого долга -->
+                <div style="margin-top: 20px; border-top: 2px solid #ecf0f1; padding-top: 20px;">
+                    <h3 style="font-size: 16px; margin-bottom: 10px;">📋 История прямого долга:</h3>
+                    <% if (debts && debts.length === 0) { %>
+                        <p class="empty-message">Нет прямого долга</p>
+                    <% } else { %>
+                        <div class="debts-list">
+                            <% debts.forEach((debt, index) => { %>
+                                <div class="debt-item">
+                                    <div class="debt-header">
+                                        <span class="debt-name">👤 <%= debt.name %></span>
+                                        <span class="debt-amount">💰 <%= debt.amount %> тг</span>
+                                        <span class="debt-date"><%= debt.date %></span>
+                                    </div>
+                                    <div class="debt-comment">📝 <%= debt.comment %></div>
+                                    <button type="button" class="btn btn-small btn-danger" onclick="removeDebt('<%= index %>')">Удалить</button>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                </div>
+            </section>
+
             <!-- Финансовый отчет -->
             <section class="section total-section">
                 <h2>💵 Финансовый отчет</h2>

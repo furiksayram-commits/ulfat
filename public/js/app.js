@@ -144,6 +144,78 @@ async function removeAbsence(name, date) {
     }
 }
 
+// Обработка формы добавления долга
+const debtForm = document.getElementById('debtForm');
+if (debtForm) {
+    debtForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('debtName').value;
+        const amount = document.getElementById('debtAmount').value;
+        const comment = document.getElementById('debtComment').value;
+        const messageElement = document.getElementById('debtMessage');
+        
+        if (!name || !amount || !comment) {
+            showMessage('Пожалуйста, заполните все поля', 'error', messageElement);
+            return;
+        }
+        
+        try {
+            const response = await fetch('/add-debt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, amount: parseFloat(amount), comment })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                showMessage(data.message, 'success', messageElement);
+                document.getElementById('debtForm').reset();
+                
+                // Перезагрузка страницы через 1.5 секунды
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showMessage(data.message || 'Ошибка при добавлении долга', 'error', messageElement);
+            }
+        } catch (error) {
+            showMessage('Ошибка подключения: ' + error.message, 'error', messageElement);
+            console.error('Error:', error);
+        }
+    });
+}
+
+// Удаление долга
+async function removeDebt(index) {
+    if (confirm(`Вы уверены, что хотите удалить этот долг?`)) {
+        try {
+            const response = await fetch('/remove-debt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ index: parseInt(index) })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Перезагрузка страницы
+                location.reload();
+            } else {
+                alert('Ошибка при удалении: ' + (data.message || 'Неизвестная ошибка'));
+            }
+        } catch (error) {
+            alert('Ошибка подключения: ' + error.message);
+            console.error('Error:', error);
+        }
+    }
+}
+
 // Обработка формы платежа
 const paymentForm = document.getElementById('paymentForm');
 if (paymentForm) {

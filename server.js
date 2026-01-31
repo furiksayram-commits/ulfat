@@ -80,14 +80,19 @@ app.get('/', async (req, res) => {
   if (!data.expenses) {
     data.expenses = [];
   }
+  if (!data.debts) {
+    data.debts = [];
+  }
   
   const stats = data.friends.map(friend => {
     const totalAbsences = data.absences.filter(absence => absence.name === friend).length;
-    const totalDebtAmount = totalAbsences * 2000;
+    const absenceDebt = totalAbsences * 2000;
+    const directDebts = data.debts.filter(d => d.name === friend).reduce((sum, d) => sum + (d.amount || 0), 0);
+    const totalDebtAmount = absenceDebt + directDebts;
     const paidAmount = data.payments.filter(p => p.name === friend).reduce((sum, p) => sum + (p.amount || 0), 0);
     const remainingDebt = Math.max(0, totalDebtAmount - paidAmount);
     const overpayment = Math.max(0, paidAmount - totalDebtAmount);
-    return { name: friend, totalAbsences, totalDebtAmount, paidAmount, remainingDebt, overpayment };
+    return { name: friend, totalAbsences, absenceDebt, directDebts, totalDebtAmount, paidAmount, remainingDebt, overpayment };
   });
   
   stats.sort((a, b) => b.remainingDebt - a.remainingDebt);
@@ -143,14 +148,19 @@ app.get('/admin', async (req, res) => {
   if (!data.expenses) {
     data.expenses = [];
   }
+  if (!data.debts) {
+    data.debts = [];
+  }
   
   const stats = data.friends.map(friend => {
     const totalAbsences = data.absences.filter(absence => absence.name === friend).length;
-    const totalDebtAmount = totalAbsences * 2000;
+    const absenceDebt = totalAbsences * 2000;
+    const directDebts = data.debts.filter(d => d.name === friend).reduce((sum, d) => sum + (d.amount || 0), 0);
+    const totalDebtAmount = absenceDebt + directDebts;
     const paidAmount = data.payments.filter(p => p.name === friend).reduce((sum, p) => sum + (p.amount || 0), 0);
     const remainingDebt = Math.max(0, totalDebtAmount - paidAmount);
     const overpayment = Math.max(0, paidAmount - totalDebtAmount);
-    return { name: friend, totalAbsences, totalDebtAmount, paidAmount, remainingDebt, overpayment };
+    return { name: friend, totalAbsences, absenceDebt, directDebts, totalDebtAmount, paidAmount, remainingDebt, overpayment };
   });
   
   stats.sort((a, b) => b.remainingDebt - a.remainingDebt);
@@ -165,6 +175,7 @@ app.get('/admin', async (req, res) => {
     stats, 
     absences: data.absences,
     payments: data.payments,
+    debts: data.debts,
     expenses: data.expenses,
     totalDebt,
     totalPaid,
@@ -299,6 +310,56 @@ app.post('/remove-payment', async (req, res) => {
 app.get('/api/absences', async (req, res) => {
   const data = await readData();
   res.json({ absences: data.absences });
+});
+
+// Добавить долг напрямую
+app.post('/add-debt', async (req, res) => {
+  if (!req.session.isAdmin) {
+    return res.status(403).json({ success: false, message: 'Доступ запрещен' });
+  }
+  
+  const { name, amount, comment } = req.body;
+  
+  if (!name || !amount || isNaN(amount)) {
+    return res.status(400).json({ success: false, message: 'Укажите имя и сумму' });
+  }
+  
+  const data = await readData();
+  
+  if (!data.debts) {
+    data.debts = [];
+  }
+  
+  data.debts.push({
+    name,
+    amount: parseFloat(amount),
+    comment: comment || '',
+    date: new Date().toLocaleDateString('ru-RU'),
+    timestamp: new Date().toISOString()
+  });
+  
+  await writeData(data);
+  
+  res.json({ success: true, message: `Долг ${amount} тг добавлен для ${name}` });
+});
+
+// Удалить долг
+app.post('/remove-debt', async (req, res) => {
+  if (!req.session.isAdmin) {
+    return res.status(403).json({ success: false, message: 'Доступ запрещен' });
+  }
+  
+  const { index } = req.body;
+  const data = await readData();
+  
+  if (!data.debts || !data.debts[index]) {
+    return res.status(400).json({ success: false, message: 'Долг не найден' });
+  }
+  
+  data.debts.splice(index, 1);
+  await writeData(data);
+  
+  res.json({ success: true, message: 'Долг удален' });
 });
 
 // Добавить расход

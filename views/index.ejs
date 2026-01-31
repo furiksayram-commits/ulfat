@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учет пропусков сбора</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📊 Учет пропусков сбора</h1>
+            <p class="subtitle">Группа из 13 друзей</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Таблица всех людей -->
+            <section class="section all-people-section">
+                <h2>👥 Полный список</h2>
+                <div class="people-table">
+                    <div class="table-header">
+                        <div class="table-cell">Имя</div>
+                        <div class="table-cell">Всего пропусков</div>
+                        <div class="table-cell">Оплачено</div>
+                        <div class="table-cell">Осталось</div>
+                        <div class="table-cell">Долг</div>
+                    </div>
+                    <% stats.forEach(stat => { %>
+                        <div class="table-row <% if (stat.totalAbsences === 0) { %>no-absence<% } %> <% if (stat.remainingAbsences === 0) { %>all-paid<% } %>">
+                            <div class="table-cell table-name"><%= stat.name %></div>
+                            <div class="table-cell"><%= stat.totalAbsences %></div>
+                            <div class="table-cell"><%= stat.paidAbsences %></div>
+                            <div class="table-cell"><%= stat.remainingAbsences %></div>
+                            <div class="table-cell table-debt"><%= stat.debt %> тг</div>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- История пропусков по людям -->
+            <section class="section history-section">
+                <h2>📅 История пропусков</h2>
+                
+                <% if (stats.length === 0) { %>
+                    <p class="empty-message">Пока нет записей о пропусках</p>
+                <% } else { %>
+                    <div class="history-list">
+                        <% stats.forEach(stat => { %>
+                            <% if (stat.totalAbsences > 0) { %>
+                                <div class="history-item">
+                                    <button type="button" class="history-button" onclick="toggleDates(this, '<%= stat.name %>')">
+                                        <span class="history-name"><%= stat.name %></span>
+                                        <span class="history-count"><%= stat.remainingAbsences %> раз</span>
+                                        <span class="history-sum">💰 <%= stat.debt %> тг</span>
+                                        <% if (stat.paidAbsences > 0) { %>
+                                            <span class="paid-badge">✅ Оплачено <%= stat.paidAbsences %></span>
+                                        <% } %>
+                                        <span class="toggle-icon">▼</span>
+                                    </button>
+                                    <div class="history-dates" style="display: none;">
+                                        <ul class="dates-list">
+                                            <% const personAbsences = absences.filter(a => a.name === stat.name).sort((a, b) => new Date(b.date) - new Date(a.date)); %>
+                                            <% personAbsences.forEach(absence => { %>
+                                                <li class="date-item">
+                                                    <span class="date-value"><%= new Date(absence.date + 'T00:00:00').toLocaleDateString('ru-RU', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></span>
+                                                    <span class="amount">2000 тг</span>
+                                                </li>
+                                            <% }); %>
+                                        </ul>
+                                    </div>
+                                </div>
+                            <% } %>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </section>
+
+            <!-- Итого по платежам -->
+            <section class="section total-section">
+                <h2>💵 Финансовый отчет</h2>
+                <div class="total-info">
+                    <div class="total-card total-debt">
+                        <div class="total-label">Нужно собрать:</div>
+                        <div class="total-value"><%= totalDebt %> тг</div>
+                    </div>
+                    <div class="total-card in-cash">
+                        <div class="total-label">В кассе:</div>
+                        <div class="total-value"><%= cashBalance %> тг</div>
+                    </div>
+                    <div class="total-card expenses-total">
+                        <div class="total-label">Расходы:</div>
+                        <div class="total-value"><%= totalExpenses %> тг</div>
+                    </div>
+                </div>
+
+                <!-- Касса - кто оплатил -->
+                <h3 class="cash-title">💳 Касса (список платежей)</h3>
+                <% if (payments.length === 0) { %>
+                    <p class="empty-message">Никто еще не оплатил</p>
+                <% } else { %>
+                    <div class="payments-list">
+                        <% payments.forEach(payment => { %>
+                            <div class="payment-item">
+                                <span class="payment-name">✅ <%= payment.name %></span>
+                                <span class="payment-amount"><%= (payment.count || 1) * 2000 %> тг</span>
+                                <span class="payment-detail">(<%= payment.count || 1 %> раз)</span>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </section>
+        </main>
+
+        <footer class="footer-links">
+            <% if (isAdmin) { %>
+                <a href="/admin" class="btn btn-primary btn-small">Админ-панель</a>
+                <a href="/admin-logout" class="btn btn-danger btn-small">Выход</a>
+            <% } else { %>
+                <a href="/admin-login" class="btn btn-secondary btn-small">Админ вход</a>
+            <% } %>
+        </footer>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

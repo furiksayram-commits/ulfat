@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-top">
+                <h1>🔧 Админ-панель</h1>
+                <a href="/admin-logout" class="btn btn-danger">Выход</a>
+            </div>
+            <p class="subtitle">Управление пропусками</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Добавление пропуска -->
+            <section class="section add-absence-section">
+                <h2>➕ Добавить пропуск</h2>
+                <form id="absenceForm" class="form">
+                    <div class="form-group">
+                        <label for="name">Выберите человека:</label>
+                        <select id="name" name="name" required>
+                            <option value="">-- Выберите --</option>
+                            <% friends.forEach(friend => { %>
+                                <option value="<%= friend %>"><%= friend %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Дата сбора:</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Добавить пропуск</button>
+                    <span id="formMessage" class="message"></span>
+                </form>
+            </section>
+
+            <!-- Управление пропусками -->
+            <section class="section management-section">
+                <h2>📋 Управление пропусками</h2>
+                
+                <% if (absences.length === 0) { %>
+                    <p class="empty-message">Нет записей о пропусках</p>
+                <% } else { %>
+                    <div class="admin-list">
+                        <% stats.forEach(stat => { %>
+                            <% if (stat.totalAbsences > 0) { %>
+                                <div class="admin-item">
+                                    <button type="button" class="admin-button" onclick="toggleAdminDates(this, '<%= stat.name %>')">
+                                        <span class="admin-name"><%= stat.name %></span>
+                                        <span class="admin-count"><%= stat.remainingAbsences %> раз</span>
+                                        <span class="admin-sum">💰 <%= stat.debt %> тг</span>
+                                        <% if (stat.paidAbsences > 0) { %>
+                                            <span class="paid-badge">✅ Оплачено <%= stat.paidAbsences %></span>
+                                        <% } %>
+                                        <span class="toggle-icon">▼</span>
+                                    </button>
+                                    <div class="admin-dates" style="display: none;">
+                                        <ul class="admin-dates-list">
+                                            <% const personAbsences = absences.filter(a => a.name === stat.name).sort((a, b) => new Date(b.date) - new Date(a.date)); %>
+                                            <% personAbsences.forEach(absence => { %>
+                                                <li class="admin-date-item">
+                                                    <span class="date-value"><%= new Date(absence.date + 'T00:00:00').toLocaleDateString('ru-RU', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></span>
+                                                    <span class="amount">2000 тг</span>
+                                                    <button type="button" class="btn btn-small btn-danger" onclick="removeAbsence('<%= absence.name %>', '<%= absence.date %>')">Удалить</button>
+                                                </li>
+                                            <% }); %>
+                                        </ul>
+                                    </div>
+                                </div>
+                            <% } %>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </section>
+
+            <!-- Финансовый отчет -->
+            <section class="section total-section">
+                <h2>💵 Финансовый отчет</h2>
+                <div class="total-info">
+                    <div class="total-card total-debt">
+                        <div class="total-label">Общий долг:</div>
+                        <div class="total-value"><%= totalDebt %> тг</div>
+                    </div>
+                    <div class="total-card paid-count">
+                        <div class="total-label">Оплачено:</div>
+                        <div class="total-value"><%= totalPaid %> тг</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Управление кассой -->
+            <section class="section cash-section">
+                <h2>💳 Касса (управление платежами)</h2>
+                
+                <div class="cash-add">
+                    <form id="paymentForm" class="form">
+                        <div class="form-group">
+                            <label for="paymentName">Выберите человека:</label>
+                            <select id="paymentName" name="paymentName" required>
+                                <option value="">-- Выберите --</option>
+                                <% stats.forEach(stat => { %>
+                                    <% if (stat.remainingAbsences > 0) { %>
+                                        <option value="<%= stat.name %>"><%= stat.name %> (Долг: <%= stat.debt %> тг, осталось: <%= stat.remainingAbsences %> раз)</option>
+                                    <% } %>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentCount">Количество пропусков для оплаты:</label>
+                            <input type="number" id="paymentCount" name="paymentCount" min="1" value="1" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Добавить платеж</button>
+                        <span id="paymentMessage" class="message"></span>
+                    </form>
+                </div>
+
+                <% if (payments.length === 0) { %>
+                    <p class="empty-message">Никто еще не оплатил</p>
+                <% } else { %>
+                    <div class="payments-list">
+                        <% payments.forEach((payment, index) => { %>
+                            <div class="payment-item">
+                                <span class="payment-name">✅ <%= payment.name %></span>
+                                <span class="payment-amount"><%= (payment.count || 1) * 2000 %> тг</span>
+                                <span class="payment-detail">(<%= payment.count || 1 %> раз)</span>
+                                <button type="button" class="btn btn-small btn-danger" onclick="removePayment('<%= index %>')">Удалить</button>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </section>
+
+            <!-- Управление расходами -->
+            <section class="section expense-section">
+                <h2>💰 Управление расходами</h2>
+                
+                <div class="expense-add">
+                    <form id="expenseForm" class="form">
+                        <div class="form-group">
+                            <label for="expenseAmount">Сумма расхода (тг):</label>
+                            <input type="number" id="expenseAmount" name="amount" min="1" placeholder="Введите сумму" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseComment">Комментарий/Описание:</label>
+                            <textarea id="expenseComment" name="comment" placeholder="Например: Аренда сала, напитки..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Добавить расход</button>
+                        <span id="expenseMessage" class="message"></span>
+                    </form>
+                </div>
+
+                <div class="financial-summary">
+                    <div class="summary-card">
+                        <div class="summary-label">Нужно собрать:</div>
+                        <div class="summary-value"><%= totalDebt %> тг</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Оплачено:</div>
+                        <div class="summary-value"><%= totalPaid %> тг</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Расходы:</div>
+                        <div class="summary-value"><%= totalExpenses %> тг</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">В кассе:</div>
+                        <div class="summary-value"><%= cashBalance %> тг</div>
+                    </div>
+                </div>
+
+                <% if (expenses.length === 0) { %>
+                    <p class="empty-message">Нет расходов</p>
+                <% } else { %>
+                    <div class="expenses-list">
+                        <% expenses.forEach((expense, index) => { %>
+                            <div class="expense-item">
+                                <div class="expense-header">
+                                    <span class="expense-amount">💸 <%= expense.amount %> тг</span>
+                                    <span class="expense-date"><%= expense.date || 'Без даты' %></span>
+                                </div>
+                                <div class="expense-comment"><%= expense.comment %></div>
+                                <button type="button" class="btn btn-small btn-danger" onclick="removeExpense('<%= index %>')">Удалить</button>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </section>
+
+            <!-- Экспорт данных -->
+            <section class="section export-section">
+                <h2>📥 Экспорт данных</h2>
+                <a href="/export-csv" class="btn btn-secondary">Скачать CSV</a>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

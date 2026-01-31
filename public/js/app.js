@@ -73,6 +73,50 @@ if (absenceForm) {
     });
 }
 
+// Обработка массового добавления пропусков
+const bulkAbsenceForm = document.getElementById('bulkAbsenceForm');
+if (bulkAbsenceForm) {
+    bulkAbsenceForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const date = document.getElementById('bulkDate').value;
+        const checkboxes = document.querySelectorAll('input[name="selectedFriends"]:checked');
+        const names = Array.from(checkboxes).map(cb => cb.value);
+        const messageElement = document.getElementById('bulkFormMessage');
+        
+        if (!date || names.length === 0) {
+            showMessage('Пожалуйста, выберите дату и минимум одного человека', 'error', messageElement);
+            return;
+        }
+        
+        try {
+            const response = await fetch('/add-bulk-absence', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ date, names })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                showMessage(data.message, 'success', messageElement);
+                
+                // Перезагрузка страницы через 1.5 секунды
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showMessage(data.error || 'Ошибка при добавлении', 'error', messageElement);
+            }
+        } catch (error) {
+            showMessage('Ошибка подключения: ' + error.message, 'error', messageElement);
+            console.error('Error:', error);
+        }
+    });
+}
+
 // Удаление пропуска
 async function removeAbsence(name, date) {
     if (confirm(`Вы уверены, что хотите удалить пропуск для ${name} от ${date}?`)) {

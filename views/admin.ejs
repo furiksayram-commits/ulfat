@@ -20,25 +20,56 @@
             <!-- Добавление пропуска -->
             <section class="section add-absence-section">
                 <h2>➕ Добавить пропуск</h2>
-                <form id="absenceForm" class="form">
-                    <div class="form-group">
-                        <label for="name">Выберите человека:</label>
-                        <select id="name" name="name" required>
-                            <option value="">-- Выберите --</option>
-                            <% friends.forEach(friend => { %>
-                                <option value="<%= friend %>"><%= friend %></option>
-                            <% }); %>
-                        </select>
-                    </div>
+                
+                <!-- Способ 1: Добавить одного человека на дату -->
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 16px; margin-bottom: 10px;">📅 Добавить одного человека:</h3>
+                    <form id="absenceForm" class="form">
+                        <div class="form-group">
+                            <label for="name">Выберите человека:</label>
+                            <select id="name" name="name" required>
+                                <option value="">-- Выберите --</option>
+                                <% friends.forEach(friend => { %>
+                                    <option value="<%= friend %>"><%= friend %></option>
+                                <% }); %>
+                            </select>
+                        </div>
 
-                    <div class="form-group">
-                        <label for="date">Дата сбора:</label>
-                        <input type="date" id="date" name="date" required>
-                    </div>
+                        <div class="form-group">
+                            <label for="date">Дата сбора:</label>
+                            <input type="date" id="date" name="date" required>
+                        </div>
 
-                    <button type="submit" class="btn btn-primary">Добавить пропуск</button>
-                    <span id="formMessage" class="message"></span>
-                </form>
+                        <button type="submit" class="btn btn-primary">Добавить пропуск</button>
+                        <span id="formMessage" class="message"></span>
+                    </form>
+                </div>
+
+                <!-- Способ 2: Добавить нескольких человек на одну дату -->
+                <div style="border-top: 2px solid #ecf0f1; padding-top: 20px;">
+                    <h3 style="font-size: 16px; margin-bottom: 10px;">👥 Добавить нескольких человек на дату:</h3>
+                    <form id="bulkAbsenceForm" class="form">
+                        <div class="form-group">
+                            <label for="bulkDate">Дата сбора:</label>
+                            <input type="date" id="bulkDate" name="bulkDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Выберите отсутствующих:</label>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">
+                                <% friends.forEach(friend => { %>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; background: #f8f9fa; border-radius: 6px;">
+                                        <input type="checkbox" name="selectedFriends" value="<%= friend %>" style="cursor: pointer;">
+                                        <span><%= friend %></span>
+                                    </label>
+                                <% }); %>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Добавить отсутствующих</button>
+                        <span id="bulkFormMessage" class="message"></span>
+                    </form>
+                </div>
             </section>
 
             <!-- Управление пропусками -->

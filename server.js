@@ -202,6 +202,43 @@ app.post('/add-absence', async (req, res) => {
   }
 });
 
+// Массовое добавление пропусков на определенную дату
+app.post('/add-bulk-absence', async (req, res) => {
+  if (!req.session.isAdmin) {
+    return res.status(403).json({ error: 'Доступ запрещен' });
+  }
+  
+  const { date, names } = req.body;
+  
+  if (!date || !names || !Array.isArray(names) || names.length === 0) {
+    return res.status(400).json({ error: 'Необходимы дата и минимум одно имя' });
+  }
+  
+  const data = await readData();
+  let addedCount = 0;
+  let skippedCount = 0;
+  
+  names.forEach(name => {
+    const exists = data.absences.some(absence => 
+      absence.name === name && absence.date === date
+    );
+    
+    if (!exists) {
+      data.absences.push({ name, date });
+      addedCount++;
+    } else {
+      skippedCount++;
+    }
+  });
+  
+  if (addedCount > 0) {
+    await writeData(data);
+  }
+  
+  const message = `Добавлено ${addedCount} пропусков${skippedCount > 0 ? `, пропущено ${skippedCount}` : ''}`;
+  res.json({ success: true, message });
+});
+
 // Удаление пропуска
 app.post('/remove-absence', async (req, res) => {
   const { name, date } = req.body;

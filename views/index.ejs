@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Учет пропусков сбора</title>
+    <title>Чойхона</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1>📊 Учет пропусков сбора</h1>
-            <p class="subtitle">Группа из 13 друзей</p>
+            <h1>📊 Чойхона</h1>
+            <p class="subtitle">Группа 13 Улфатлар</p>
         </header>
 
         <main class="main-content">
             <!-- Таблица всех людей -->
             <section class="section all-people-section">
-                <h2>👥 Полный список</h2>
+                <h2>👥Список</h2>
                 <div class="people-table">
                     <div class="table-header">
-                        <div class="table-cell">Имя</div>
-                        <div class="table-cell">Всего пропусков</div>
-                        <div class="table-cell">Оплачено</div>
-                        <div class="table-cell">Осталось</div>
-                        <div class="table-cell">Долг</div>
+                        <div class="table-cell">Исми</div>
+                        <div class="table-cell">Кемаган</div>
+                        <div class="table-cell">Туланди</div>
+                        <div class="table-cell">Колди</div>
+                        <div class="table-cell">Карз</div>
                     </div>
                     <% stats.forEach(stat => { %>
                         <div class="table-row <% if (stat.totalAbsences === 0) { %>no-absence<% } %> <% if (stat.remainingAbsences === 0) { %>all-paid<% } %>">
@@ -39,7 +39,7 @@
 
             <!-- История пропусков по людям -->
             <section class="section history-section">
-                <h2>📅 История пропусков</h2>
+                <h2>📅 История </h2>
                 
                 <% if (stats.length === 0) { %>
                     <p class="empty-message">Пока нет записей о пропусках</p>
@@ -116,7 +116,7 @@
                 <a href="/admin" class="btn btn-primary btn-small">Админ-панель</a>
                 <a href="/admin-logout" class="btn btn-danger btn-small">Выход</a>
             <% } else { %>
-                <a href="/admin-login" class="btn btn-secondary btn-small">Админ вход</a>
+                <a href="/admin-login" class="btn btn-secondary btn-small">Катта Боллар</a>
             <% } %>
         </footer>
     </div>

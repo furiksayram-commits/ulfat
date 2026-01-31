@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = '8888';
 
 // JSONBin конфигурация
-const JSONBIN_BIN_ID = '696de25bd0ea881f40758d1f';
+const JSONBIN_BIN_ID = '697d986543b1c97be959cbd0';
 const JSONBIN_API_KEY = '$2a$10$J24VfFSehaO.P78eeSB/feH0/x9TKke3QBNn5eaCyqzwEnwv/w4sC';
 const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 

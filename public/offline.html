@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нет соединения</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+
+        .offline-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px 20px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .offline-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .status-box {
+            background: #f5f5f5;
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .status-box strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .tips {
+            text-align: left;
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        .tips h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .tips ul {
+            list-style-position: inside;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .tips li {
+            margin-bottom: 5px;
+        }
+
+        .btn-container {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-retry {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-retry:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background: #ecf0f1;
+            color: #333;
+        }
+
+        .btn-back:hover {
+            background: #bdc3c7;
+        }
+
+        .connection-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .connection-indicator.offline {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .connection-indicator.online {
+            background: #2ecc71;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-indicator offline" id="connectionIndicator">
+        📡 Нет соединения
+    </div>
+
+    <div class="offline-container">
+        <div class="offline-icon">📡</div>
+        <h1>Нет интернета</h1>
+        <p>Проверьте ваше интернет соединение и попробуйте снова.</p>
+
+        <div class="status-box">
+            <strong>Что случилось?</strong>
+            Вы потеряли подключение к интернету. Однако, приложение сохранено на вашем устройстве и может работать в офлайн режиме с ограниченной функциональностью.
+        </div>
+
+        <div class="tips">
+            <h3>💡 Что вы можете сделать:</h3>
+            <ul>
+                <li>Проверьте Wi-Fi соединение</li>
+                <li>Включите мобильные данные</li>
+                <li>Перезагрузите устройство</li>
+                <li>Попробуйте позже</li>
+            </ul>
+        </div>
+
+        <div class="btn-container">
+            <button class="btn-retry" onclick="retry()">🔄 Повторить</button>
+            <button class="btn-back" onclick="goBack()">👈 Вернуться</button>
+        </div>
+    </div>
+
+    <script>
+        // Проверка статуса соединения
+        function updateConnectionStatus() {
+            const indicator = document.getElementById('connectionIndicator');
+            if (navigator.onLine) {
+                indicator.classList.remove('offline');
+                indicator.classList.add('online');
+                indicator.textContent = '✅ Соединение восстановлено';
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                indicator.classList.add('offline');
+                indicator.classList.remove('online');
+                indicator.textContent = '📡 Нет соединения';
+            }
+        }
+
+        // Событие восстановления соединения
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Функции кнопок
+        function retry() {
+            location.reload();
+        }
+
+        function goBack() {
+            history.back();
+        }
+
+        // Проверить соединение при загрузке
+        updateConnectionStatus();
+    </script>
+</body>
+</html>

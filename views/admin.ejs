@@ -2,7 +2,12 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Админ-панель управления пропусками">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
     <title>Админ-панель</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -281,9 +286,35 @@
                 <h2>📥 Экспорт данных</h2>
                 <a href="/export-csv" class="btn btn-secondary">Скачать CSV</a>
             </section>
+
+            <!-- Полная очистка штрафов и оплат -->
+            <section class="section clear-section" style="margin-top:18px;">
+                <h2>⚠️ Полная очистка</h2>
+                <p>Кнопка ниже удалит все записи о штрафах (пропусках), всех оплатах и расходах. Эта операция необратима.</p>
+                <p>Для подтверждения введите код администратора <strong>8888</strong> при запросе.</p>
+                <button type="button" class="btn btn-danger" onclick="clearPenaltiesPayments()">Удалить все штрафы, оплаты и расходы</button>
+            </section>
         </main>
     </div>
 
     <script src="/js/app.js"></script>
+    
+    <!-- Service Worker регистрация для PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/js/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker зарегистрирован:', registration);
+                        setInterval(() => {
+                            registration.update();
+                        }, 24 * 60 * 60 * 1000);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker ошибка регистрации:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>

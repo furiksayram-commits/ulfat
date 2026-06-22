@@ -280,8 +280,24 @@ app.post('/add-payment', async (req, res) => {
   }
   
   const data = await readData();
+  const parsedAmount = parseFloat(amount);
   
-  data.payments.push({ name, amount: parseFloat(amount), date: new Date().toISOString().split('T')[0] });
+  // Добавить платеж
+  data.payments.push({ name, amount: parsedAmount, date: new Date().toISOString().split('T')[0] });
+  
+  // Проверить, полностью ли оплачены пропуски
+  const totalAbsences = data.absences.filter(absence => absence.name === name).length;
+  const absenceDebt = totalAbsences * 2000;
+  const directDebts = data.debts.filter(d => d.name === name).reduce((sum, d) => sum + (d.amount || 0), 0);
+  const totalDebtAmount = absenceDebt + directDebts;
+  const paidAmount = data.payments.filter(p => p.name === name).reduce((sum, p) => sum + (p.amount || 0), 0);
+  
+  // Если оплачено больше или равно долгу за пропуски (только за пропуски, не прямой долг)
+  if (paidAmount >= absenceDebt && absenceDebt > 0) {
+    // Удалить все пропуски этого человека
+    data.absences = data.absences.filter(absence => absence.name !== name);
+  }
+  
   await writeData(data);
   
   return res.json({ success: true, message: `Платеж ${amount} тг добавлен` });
@@ -409,6 +425,30 @@ app.post('/remove-expense', async (req, res) => {
   await writeData(data);
   
   res.json({ success: true, message: 'Расход удален' });
+});
+
+// Полная очистка штрафов (пропусков) и оплат
+app.post('/clear-penalties-payments', async (req, res) => {
+  if (!req.session.isAdmin) {
+    return res.status(403).json({ success: false, message: 'Доступ запрещен' });
+  }
+  const { confirmCode } = req.body || {};
+
+  // Дополнительная проверка кода подтверждения для безопасности
+  if (!confirmCode || confirmCode.toString() !== ADMIN_PASSWORD) {
+    return res.status(403).json({ success: false, message: 'Неверный код подтверждения' });
+  }
+
+  const data = await readData();
+
+  // Очищаем массивы пропусков, платежей и расходов
+  data.absences = [];
+  data.payments = [];
+  data.expenses = [];
+
+  await writeData(data);
+
+  res.json({ success: true, message: 'Все штрафы, оплаты и расходы удалены' });
 });
 
 // Экспорт данных в CSV

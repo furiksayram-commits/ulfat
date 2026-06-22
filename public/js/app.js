@@ -357,6 +357,39 @@ async function removeExpense(index) {
     }
 }
 
+// Полная очистка штрафов и оплат (клиентская часть)
+async function clearPenaltiesPayments() {
+    if (!confirm('Вы уверены? Это удалит ВСЕ пропуски, оплаты и расходы. Действие необратимо.')) {
+        return;
+    }
+
+    const code = prompt('Введите код подтверждения администратора (например: 8888):');
+    if (!code) {
+        alert('Операция отменена: код не введён');
+        return;
+    }
+
+    try {
+        const response = await fetch('/clear-penalties-payments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ confirmCode: code })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(data.message || 'Данные удалены');
+            location.reload();
+        } else {
+            alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        alert('Ошибка подключения: ' + error.message);
+        console.error('Error:', error);
+    }
+}
+
 // Показать сообщение
 function showMessage(message, type, element) {
     element.textContent = message;

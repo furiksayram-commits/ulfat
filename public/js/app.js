@@ -357,15 +357,15 @@ async function removeExpense(index) {
     }
 }
 
-// Полная очистка штрафов и оплат (клиентская часть)
+// Полная очистка базы (с сохранением списка участников)
 async function clearPenaltiesPayments() {
-    if (!confirm('Вы уверены? Это удалит ВСЕ пропуски, оплаты и расходы. Действие необратимо.')) {
+    if (!confirm('Вы уверены? Это удалит все движения: пропуски, оплаты, долги и расходы. Список участников останется.')) {
         return;
     }
 
-    const code = prompt('Введите код подтверждения администратора (например: 8888):');
+    const code = prompt('Введите пароль администратора:');
     if (!code) {
-        alert('Операция отменена: код не введён');
+        alert('Операция отменена: пароль не введён');
         return;
     }
 
@@ -379,7 +379,7 @@ async function clearPenaltiesPayments() {
         const data = await response.json();
 
         if (response.ok) {
-            alert(data.message || 'Данные удалены');
+            alert(data.message || 'База очищена');
             location.reload();
         } else {
             alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'));

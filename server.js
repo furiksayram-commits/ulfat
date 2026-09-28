@@ -7,7 +7,7 @@ const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = '8888';
+const ADMIN_PASSWORD = '1234';
 
 // JSONBin конфигурация
 const JSONBIN_BIN_ID = '697da8ecd0ea881f4095597a';
@@ -432,23 +432,23 @@ app.post('/clear-penalties-payments', async (req, res) => {
   if (!req.session.isAdmin) {
     return res.status(403).json({ success: false, message: 'Доступ запрещен' });
   }
+
   const { confirmCode } = req.body || {};
 
-  // Дополнительная проверка кода подтверждения для безопасности
   if (!confirmCode || confirmCode.toString() !== ADMIN_PASSWORD) {
     return res.status(403).json({ success: false, message: 'Неверный код подтверждения' });
   }
 
   const data = await readData();
 
-  // Очищаем массивы пропусков, платежей и расходов
   data.absences = [];
   data.payments = [];
+  data.debts = [];
   data.expenses = [];
 
   await writeData(data);
 
-  res.json({ success: true, message: 'Все штрафы, оплаты и расходы удалены' });
+  res.json({ success: true, message: 'База очищена: все движения удалены, список участников сохранён' });
 });
 
 // Экспорт данных в CSV

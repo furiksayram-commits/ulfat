@@ -39,7 +39,7 @@
                             <div class="table-cell"><%= stat.totalAbsences %></div>
                             <div class="table-cell"><%= stat.totalDebtAmount %> тг</div>
                             <div class="table-cell"><%= stat.paidAmount %> тг</div>
-                            <div class="table-cell"><% if (stat.remainingDebt > 0) { %><%= stat.remainingDebt %> тг<% } else if (stat.overpayment > 0) { %>+<%= stat.overpayment %> тг<% } else { %>✅ Оплачено<% } %></div>
+                            <div class="table-cell"><% if (stat.remainingDebt > 0) { %><%= stat.remainingDebt %> тг<% } else { %>✅ Оплачено<% } %></div>
                         </div>
                     <% }); %>
                 </div>
